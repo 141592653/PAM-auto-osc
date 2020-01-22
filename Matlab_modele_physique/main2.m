@@ -1,11 +1,9 @@
-%constantes
-%clear;
 
-function Q = modele_non_modal(zeta, gamma, L, percent, r, F, Q)
+function Q=main2(zeta, gamma, L, F, Q, percent)
     L = 0.3; %length
     zeta = 0.8;%ou 0.4
     gamma = 0.8;
-    r = -0.9999;
+    r = -0.9;
     F=[1, 1]; %??,
     Q=[0.1,0.11]; %??
     percent = 0.3; %commentaire
@@ -19,7 +17,7 @@ function Q = modele_non_modal(zeta, gamma, L, percent, r, F, Q)
     eps = 0.000000001;
     %%
     b = bChoice(percent, T);
-    a = aChoice(T, b, 1000, r);
+    a = aChoice(T, b, 1000);
     t=deltaT;
 
     for i=1:nbIter
@@ -119,14 +117,16 @@ function Q = modele_non_modal(zeta, gamma, L, percent, r, F, Q)
         F(2+i) = f;
         Q(2+i) = q;
 
-        if(2000>i>1935)
-
+    %     if(i>1933)
+    %         if(q==qh)
+    %             i
+    %         end
     %         qa = linspace(-20,20,500);
     %         q2 = linspace(-20,gamma-1,500);
     %         d4 = zeta.*(1-gamma+qa).*sqrt(abs(gamma-qa)).*sign(gamma - qa);
     %         figure
     %         plot(qa,d4,qa,qa-qh, q2,q2*0)
-        end
+    %     end
     end
 
     qa = linspace(-20,20,500);
