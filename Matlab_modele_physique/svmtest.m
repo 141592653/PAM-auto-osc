@@ -21,13 +21,16 @@ pressure = zeros(nb_points,N);
 
 % for each set of points, get pressure vector
 for i = 1:nb_points
-    % pressure(i,:) = clarinet_modal(x(i,1), x(i,2), L, T, dt, Q1);
+    tic
+%     pressure(i,:) = clarinet_modal(x(i,1), x(i,2), L, T, dt, Q1);
     pressure(i,:) = main2(x(i,1), x(i,2), L, F, Q, percent);
+    toc
 end
 
+f = @(x) (oscillation(x, eps));
 % y is the descriptor applied on each pressure vector
 for i = 1:nb_points
-   y(i,:) = oscillation(pressure(i,:), eps); 
+   y(i,:) = f(pressure(i,:)); 
 end
 
 plot(y);

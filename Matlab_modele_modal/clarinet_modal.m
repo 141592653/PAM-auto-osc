@@ -3,6 +3,9 @@ function output = clarinet_modal(zeta, gamma, L, T, dt, Q1)
 
     p = zeros(1,N);
     u = zeros(1,N);
+    
+    u(1) = 0;
+    p(1) = 0;
 
     c = 340;
     for i = 2:N

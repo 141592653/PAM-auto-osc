@@ -1,12 +1,12 @@
 
 function Q=main2(zeta, gamma, L, F, Q, percent)
-    L = 0.3; %length
-    zeta = 0.8;%ou 0.4
-    gamma = 0.8;
+%     L = 0.3; %length
+%     zeta = 0.8;%ou 0.4
+%     gamma = 0.8;
     r = -0.9;
-    F=[1, 1]; %??,
-    Q=[0.1,0.11]; %??
-    percent = 0.3; %commentaire
+%     F=[1, 1]; %??,
+%     Q=[0.1,0.11]; %??
+%     percent = 0.3; %commentaire
 
     nbIter = 50000;
 
@@ -25,12 +25,12 @@ function Q=main2(zeta, gamma, L, F, Q, percent)
         realRoot = [];
 
         %equation 10 dirac en t-T
-    %     if(i-T/deltaT >= 0)
-    %         qh = r*(Q(floor(i-T/deltaT+1)) + Zc*F(floor(i-T/deltaT+1)));%%%%%
-    %     else
-    %         qh = 0;
-    %     end
-        qh = qh1(t, Q, F, Zc, T, b, a, deltaT);
+        if(i-T/deltaT >= 0)
+            qh = r*(Q(floor(i-T/deltaT+1)) + Zc*F(floor(i-T/deltaT+1)));%%%%%
+        else
+            qh = 0;
+        end
+       % qh = qh1(t, Q, F, Zc, T, b, a, deltaT);
 
         %equations 1 11
         %q<gamma
@@ -132,6 +132,6 @@ function Q=main2(zeta, gamma, L, F, Q, percent)
     qa = linspace(-20,20,500);
     q2 = linspace(-20,gamma-1,500);
     d4 = zeta.*(1-gamma+qa).*sqrt(abs(gamma-qa)).*sign(gamma - qa);
-    figure
-    plot(qa,d4,qa,qa-qh, q2,q2*0)
+    %figure
+    %plot(qa,d4,qa,qa-qh, q2,q2*0)
 end
