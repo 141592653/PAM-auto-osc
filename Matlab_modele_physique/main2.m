@@ -1,9 +1,8 @@
-
-function Q=main2(zeta, gamma, L, F, Q, percent)
+function [Q,F]=main2(zeta, gamma, L, F, Q, percent)
 %     L = 0.3; %length
 %     zeta = 0.8;%ou 0.4
 %     gamma = 0.8;
-    r = -0.9;
+    r = -0.98;
 %     F=[1, 1]; %??,
 %     Q=[0.1,0.11]; %??
 %     percent = 0.3; %commentaire
@@ -30,7 +29,7 @@ function Q=main2(zeta, gamma, L, F, Q, percent)
         else
             qh = 0;
         end
-       % qh = qh1(t, Q, F, Zc, T, b, a, deltaT);
+%        qh = qh1(t, Q, F, Zc, T, b, a, deltaT);
 
         %equations 1 11
         %q<gamma
@@ -95,8 +94,8 @@ function Q=main2(zeta, gamma, L, F, Q, percent)
             qa = linspace(-20,20,500);
             q2 = linspace(-20,gamma-1,500);
             d4 = zeta.*(1-gamma+qa).*sqrt(abs(gamma-qa)).*sign(gamma - qa);
-            figure
-            plot(qa,d4,qa,qa-qh, q2,q2*0)
+            %figure
+            %plot(qa,d4,qa,qa-qh, q2,q2*0)
 
             realRoot = sort(realRoot);
             if(length(realRoot)==3)

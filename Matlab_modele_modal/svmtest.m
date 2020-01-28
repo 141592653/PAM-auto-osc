@@ -21,23 +21,22 @@ pressure = zeros(nb_points,N);
 
 % for each set of points, get pressure vector
 % for i = 1:nb_points
-%     tic
-% %     pressure(i,:) = clarinet_modal(x(i,1), x(i,2), L, T, dt, Q1);
-%     pressure(i,:) = main2(x(i,1), x(i,2), L, F, Q, percent);
-%     toc
+%     pressure(i,:) = clarinet_modal(x(i,1), x(i,2), L, T, dt, Q1);
+% %     pressure(i,:) = main2(x(i,1), x(i,2), L, F, Q, percent);
 % end
 
-%f = @(x) (oscillation(main2(x(1), x(2), L, F, Q, percent), eps));
-f = @(x) (oscillation(main2(x(1), x(2), L, F, Q, percent), eps));
+f = @(x) (oscillation(clarinet_modal(x(1), x(2), L, T, dt, Q1),eps));
+
 % y is the descriptor applied on each pressure vector
 for i = 1:nb_points
-   y(i,:) = f(x(i,:)); 
-   i
+   y(i) = f(x(i,:)); 
 end
+
+y = y';
 
 plot(y);
 SVM = CODES.fit.svm(x,y);
-svm_col = CODES.sampling.edsd(f, SVM, [0 0], [0.99 0.99] , 'iter_max', 50, 'conv', false);
+svm_col = CODES.sampling.edsd(f, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
 figure;
 svm_col{end}.isoplot
 axis equal 
