@@ -14,7 +14,12 @@ function [p,u] = clarinet_modal2(zeta, gamma, T, dt, f, Q, Z)
         s = (w/2./Q.*(-1 + 1i * sqrt(4*Q.^2 - 1)))';
         D = (Z.*w./Q.*(1+1i./sqrt(4*Q.^2 - 1)))';
         pr = 2*real(sum(p(:,i-1)));
-        u(i) = F0 + A*pr + B*pr^2 + C*pr^3;
+        %u(i) = F0 + A*pr + B*pr^2 + C*pr^3;
+        if gamma - pr < 1
+            u(i) = zeta.*(1-gamma+pr).*sqrt(abs(gamma-pr)).*sign(gamma - pr) ;
+        else
+            u(i) = 0;
+        end
         p(:,i) = (p(:,i-1) + dt*D*u(i))./(1 - dt*s);
     end
 end
