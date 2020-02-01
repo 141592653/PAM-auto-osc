@@ -19,6 +19,14 @@ double trapeze(double func(const double, std::vector<double> ), const double sta
 	return step * sum / 2.;
 }
 
+template<int N>
+double trapeze(const std::array<double, N> &func, const double step) {
+	int n = func.size() - 1;
+	double sum = func.front() + func.back() + \
+		2 * std::accumulate(std::begin(func), std::end(func), 0, std::plus<int>());
+	return step * sum / 2.;
+}
+
 
 template <int N>
 double scalarProduct(const std::array<double, N> &a, const std::array<double, N> &b) {

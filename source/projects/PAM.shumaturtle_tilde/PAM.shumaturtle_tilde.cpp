@@ -50,20 +50,17 @@ private:
 	std::array<double, COMPUTATION_DEPTH> R;
 
 
-	
+
 
 	void updateDissipation() {
 		//update b
-		b = log(2.) * pow(2. / dissipation * resonator_time, 2);
-		
+		b = log(2.) * pow(2. / (dissipation * resonator_time), 2);
+
 		//update a
 		double tmp = 2. * sqrt(1. / (2. * b));
-
-
 		std::vector<double> v{ b,resonator_time };
-		
-		a = -1 / trapeze(exponentialR, resonator_time -tmp, 
-			resonator_time + tmp, 1000,v);
+		a = -1 / trapeze(exponentialR, resonator_time - tmp,
+			resonator_time + tmp, 1000, v);
 	}
 
 public:
@@ -73,33 +70,36 @@ public:
 	MIN_RELATED{ "" };
 
 	schumaClarinet(const atoms& args = {}) {
-		if (args.size() >= 1) {
-			if (args.size() >= 2) {
-				if (args.size() >= 3) {
-					if (args.size() >= 4) {
-						reed_opening = static_cast<double>(args[3]);
-					}
-					else
-						reed_opening = DEFAULT_REED_OPENING;
-					pressure_ratio = static_cast<double>(args[2]);
-				}
-				else
-					pressure_ratio = DEFAULT_PRESSURE_RATIO;
-				dissipation = static_cast<double>(args[1]);
-			}
-			else
-				dissipation = DEFAULT_DISSIPATION;
-			resonator_time = LengthToTime(static_cast<double>(args[0]));
-		}
 
+		if (args.size() >= 1) 	
+			resonator_time = LengthToTime(static_cast<double>(args[0]));
 		else
 			resonator_time = LengthToTime(DEFAULT_RESONATOR_LENGTH);
+		if (args.size() >= 2) 
+			dissipation = static_cast<double>(args[1]);
+		else 
+			dissipation = DEFAULT_DISSIPATION;
+		if (args.size() >= 3) 
+			pressure_ratio = static_cast<double>(args[2]);
+		else
+			pressure_ratio = DEFAULT_PRESSURE_RATIO;
+		if (args.size() >= 4) 
+			reed_opening = static_cast<double>(args[3]);
+		else
+			reed_opening = DEFAULT_REED_OPENING;
+
+
 		//Initialisation
 		delta_t = 1. / samplerate();
 		for (int i = 0; i < COMPUTATION_DEPTH; i++) {
 			F[i] = 1.;
 			Q[i] = (i + 1) / pow(10, i + 1);
 		}
+
+		cout << "res " << resonator_time << " dissip " << dissipation << endl;
+		updateDissipation();
+
+		cout << a << " " << b << endl;
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pas bien !!!!!!!!!!!!!!!!!!!!!!!!
 		R[0] = -0.9;
