@@ -6,12 +6,15 @@
 #include "c74_min.h"
 #include <complex>
 #include <array>
+#include <cmath>
+
+#include "trapeze.h"
 
 using namespace c74::min;
 
 #define DEFAULT_PRESSURE_RATIO 0.8
-#define DEFAULT_REED_OPENING 0.6
-#define DEFAULT_RESONATOR_LENGTH 0.5
+#define DEFAULT_REED_OPENING 0.8
+#define DEFAULT_RESONATOR_LENGTH 0.3
 #define DEFAULT_DISSIPATION 0.3
 
 
@@ -30,11 +33,38 @@ inline double LengthToTime(double length) {
 	return 2. * length / SOUND_SPEED;
 }
 
+
+double exponentialR(const double t, std::vector<double> args) {
+	return t < 0 ? 0 : exp(-args[0] * pow(t - args[1], 2));
+}
+
+
 class schumaClarinet : public object<schumaClarinet>, public sample_operator<1, 1> {
 private:
+	double dissipation;
 	double delta_t;
+	double a;
+	double b;
 	std::array<double, COMPUTATION_DEPTH> F;
 	std::array<double, COMPUTATION_DEPTH> Q;
+	std::array<double, COMPUTATION_DEPTH> R;
+
+
+	
+
+	void updateDissipation() {
+		//update b
+		b = log(2.) * pow(2. / dissipation * resonator_time, 2);
+		
+		//update a
+		double tmp = 2. * sqrt(1. / (2. * b));
+
+
+		std::vector<double> v{ b,resonator_time };
+		
+		a = -1 / trapeze(exponentialR, resonator_time -tmp, 
+			resonator_time + tmp, 1000,v);
+	}
 
 public:
 	MIN_DESCRIPTION{ "A modal model of a clarinet" };
@@ -64,19 +94,21 @@ public:
 
 		else
 			resonator_time = LengthToTime(DEFAULT_RESONATOR_LENGTH);
-
-
 		//Initialisation
 		delta_t = 1. / samplerate();
 		for (int i = 0; i < COMPUTATION_DEPTH; i++) {
 			F[i] = 1.;
-			Q[i] = (i + 1) / pow(10, -(i + 1));
+			Q[i] = (i + 1) / pow(10, i + 1);
 		}
+
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pas bien !!!!!!!!!!!!!!!!!!!!!!!!
+		R[0] = -0.9;
+		R[1] = 0;
 	}
 
 
 	inlet<>  in_length{ this, "(signal) Length","signal" };
-	inlet<>  in_quality{ this, "(number) Quality factor of the resonator" };
+	inlet<>  in_dissipation{ this, "(number) How much dissipation in the reflexion function." };
 	inlet<>  in_pressure{ this, "(number) Pressure inside the mouth compared to the pressure needed to close the reed" };
 	inlet<>  in_opening{ this, "(number) Describes how the clarinet gives the air way " };
 	outlet<> out1{ this, "(signal) clarinet sound", "signal" };
@@ -86,8 +118,8 @@ public:
 	argument<number> length_arg{
 		this, "resonator_length", "Initial length of the clarinet" };
 
-	argument<number> quality_arg{
-		this, "quality_factor", "Initial quality factor of the resonator" };
+	argument<number> dissipation_arg{
+		this, "quality_factor", "Initial dissipation in the reflexion function." };
 
 	argument<number> pressure_arg{
 		this, "pressure_ratio", "Initial initial mouth pressure ratio" };
@@ -95,10 +127,10 @@ public:
 	argument<number> reed_opening_arg{
 		this, "reed_opening", "Initial reed opening" };
 
-	attribute<number> pressure_ratio{ this, "pressure_ratio", DEFAULT_PRESSURE_RATIO,
+	attribute<double> pressure_ratio{ this, "pressure_ratio", DEFAULT_PRESSURE_RATIO,
 		description {"Pressure inside the mouth compared to the pressure needed to close the reed"},
 		setter { MIN_FUNCTION {
-			
+
 			return args;
 		}} };
 
@@ -109,18 +141,15 @@ public:
 		}} };
 
 
+
 	attribute<number> resonator_time{ this, "resonator_time", DEFAULT_RESONATOR_LENGTH ,
-	
+
 		description {"Time for the sound to go back and forth in the resonator" },
 		setter { MIN_FUNCTION {
+			double new_T = static_cast<double>(args[0]);
+		updateDissipation();
 			return args;
 		}} };
-
-	attribute<number> dissipation{ this, "dissipation", DEFAULT_DISSIPATION,
-	description {"How much dissipation in the reflexion function."},
-	setter { MIN_FUNCTION {
-		return args;
-	}} };
 
 
 	message<> m_number{ this, "number", "Set the frequency in Hz.", MIN_FUNCTION {
@@ -129,7 +158,8 @@ public:
 			resonator_time = LengthToTime(static_cast<double>(args[0]));
 			break;
 		case 1:
-			dissipation = args;
+			dissipation = static_cast<double>(args[0]);
+			updateDissipation();
 			break;
 		case 2:
 			pressure_ratio = args;

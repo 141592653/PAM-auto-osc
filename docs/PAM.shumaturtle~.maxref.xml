@@ -29,8 +29,8 @@
 		</objarg>
 
 		<objarg name='quality_factor' optional='1' type='number'>
-			<digest>Initial quality factor of the resonator </digest>
-			<description>Initial quality factor of the resonator </description>
+			<digest>Initial dissipation in the reflexion function</digest>
+			<description>Initial dissipation in the reflexion function. </description>
 		</objarg>
 
 		<objarg name='pressure_ratio' optional='1' type='number'>
@@ -72,14 +72,9 @@
 			<description>Describes how the clarinet gives the air way </description>
 		</attribute>
 
-		<attribute name='resonator_length' get='1' set='1' type='float64' size='1' >
-			<digest>Length of the clarinet </digest>
-			<description>Length of the clarinet </description>
-		</attribute>
-
-		<attribute name='quality_factor' get='1' set='1' type='float64' size='1' >
-			<digest>Quality factor of the resonator </digest>
-			<description>Quality factor of the resonator </description>
+		<attribute name='resonator_time' get='1' set='1' type='float64' size='1' >
+			<digest>Time for the sound to go back and forth in the resonator </digest>
+			<description>Time for the sound to go back and forth in the resonator </description>
 		</attribute>
 
 	</attributelist>
