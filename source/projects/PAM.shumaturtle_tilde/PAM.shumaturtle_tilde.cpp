@@ -5,37 +5,36 @@
 
 #include "c74_min.h"
 #include <complex>
+#include <array>
 
 using namespace c74::min;
 
 #define DEFAULT_PRESSURE_RATIO 0.8
 #define DEFAULT_REED_OPENING 0.6
 #define DEFAULT_RESONATOR_LENGTH 0.5
-#define DEFAULT_QUALITY_FACT 1
+#define DEFAULT_DISSIPATION 0.3
+
+
+#define COMPUTATION_DEPTH 2
+#define EPSILON 0.0000001
+
 #define SOUND_SPEED 340.
+#define ZC 1.
 
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
 #endif // !M_PI
 
-using namespace std;
 
+inline double LengthToTime(double length) {
+	return 2. * length / SOUND_SPEED;
+}
 
-class modalClarinet : public object<modalClarinet>, public sample_operator<1, 1> {
+class schumaClarinet : public object<schumaClarinet>, public sample_operator<1, 1> {
 private:
-	double A_gamma;
-	double B_gamma;
-	double C_gamma;
-	double u0_gamma;
-	double omega_L;
-	double F1_L;
-	double dt;
-
-	complex<double> s1_Q;
-	complex<double> C1_Q;
-
-	complex<double> p_previous;
-
+	double delta_t;
+	std::array<double, COMPUTATION_DEPTH> F;
+	std::array<double, COMPUTATION_DEPTH> Q;
 
 public:
 	MIN_DESCRIPTION{ "A modal model of a clarinet" };
@@ -43,7 +42,7 @@ public:
 	MIN_AUTHOR{ "Alice Rixte" };
 	MIN_RELATED{ "" };
 
-	modalClarinet(const atoms& args = {}) {
+	schumaClarinet(const atoms& args = {}) {
 		if (args.size() >= 1) {
 			if (args.size() >= 2) {
 				if (args.size() >= 3) {
@@ -56,18 +55,23 @@ public:
 				}
 				else
 					pressure_ratio = DEFAULT_PRESSURE_RATIO;
-				quality_factor = static_cast<double>(args[1]);
+				dissipation = static_cast<double>(args[1]);
 			}
 			else
-				quality_factor = DEFAULT_QUALITY_FACT;
-			resonator_length = static_cast<double>(args[0]);
+				dissipation = DEFAULT_DISSIPATION;
+			resonator_time = LengthToTime(static_cast<double>(args[0]));
 		}
 
 		else
-			resonator_length = DEFAULT_RESONATOR_LENGTH;
+			resonator_time = LengthToTime(DEFAULT_RESONATOR_LENGTH);
 
-		p_previous = static_cast<complex<double>>(0.) ;
-		dt = 1 / samplerate();
+
+		//Initialisation
+		delta_t = 1. / samplerate();
+		for (int i = 0; i < COMPUTATION_DEPTH; i++) {
+			F[i] = 1.;
+			Q[i] = (i + 1) / pow(10, -(i + 1));
+		}
 	}
 
 
@@ -77,18 +81,6 @@ public:
 	inlet<>  in_opening{ this, "(number) Describes how the clarinet gives the air way " };
 	outlet<> out1{ this, "(signal) clarinet sound", "signal" };
 
-
-
-
-	/*argument<number> frequency_arg {
-		this, "frequency", "Initial frequency in hertz.", MIN_ARGUMENT_FUNCTION { frequency = arg; }};
-
-
-	message<> m_number {
-		this, "number", "Set the frequency in Hz.", MIN_FUNCTION {
-			frequency = args;
-			return {};
-		}};*/
 
 
 	argument<number> length_arg{
@@ -106,12 +98,6 @@ public:
 	attribute<number> pressure_ratio{ this, "pressure_ratio", DEFAULT_PRESSURE_RATIO,
 		description {"Pressure inside the mouth compared to the pressure needed to close the reed"},
 		setter { MIN_FUNCTION {
-			double new_gamma = static_cast<double>(args[0]);
-			double sqr_gamma = sqrt(new_gamma);
-			A_gamma = (3. * new_gamma - 1.) / (2. * sqr_gamma);
-			B_gamma = -(3. * new_gamma + 1.) / (8. * pow(sqr_gamma,3));
-			C_gamma = -(new_gamma + 1.) / (16. * pow(sqr_gamma,5));
-			u0_gamma = (1 - new_gamma) * sqr_gamma;
 			
 			return args;
 		}} };
@@ -123,22 +109,16 @@ public:
 		}} };
 
 
-	attribute<number> resonator_length{ this, "resonator_length", DEFAULT_RESONATOR_LENGTH ,
+	attribute<number> resonator_time{ this, "resonator_time", DEFAULT_RESONATOR_LENGTH ,
 	
-		description {"Length of the clarinet"},
+		description {"Time for the sound to go back and forth in the resonator" },
 		setter { MIN_FUNCTION {
-			F1_L = 2 * SOUND_SPEED / static_cast<double>(args[0]);
-			omega_L = M_PI * F1_L / 8;
 			return args;
 		}} };
 
-	attribute<number> quality_factor{ this, "quality_factor", DEFAULT_QUALITY_FACT,
-	description {"Quality factor of the resonator"},
+	attribute<number> dissipation{ this, "dissipation", DEFAULT_DISSIPATION,
+	description {"How much dissipation in the reflexion function."},
 	setter { MIN_FUNCTION {
-		double new_Q = static_cast<double>(args[0]);
-		complex<double> sqrt_Q = sqrt(4 * pow(new_Q, 2) - 1.);
-		s1_Q = new_Q * (1i*sqrt_Q- static_cast<complex<double>>(1));
-		C1_Q = static_cast<complex<double>>(1) + 1i/sqrt_Q;
 		return args;
 	}} };
 
@@ -146,10 +126,10 @@ public:
 	message<> m_number{ this, "number", "Set the frequency in Hz.", MIN_FUNCTION {
 		switch (inlet) {
 		case 0:
-			resonator_length = args;
+			resonator_time = LengthToTime(static_cast<double>(args[0]));
 			break;
 		case 1:
-			quality_factor = args;
+			dissipation = args;
 			break;
 		case 2:
 			pressure_ratio = args;
@@ -164,14 +144,8 @@ public:
 	} };
 
 	sample operator()(sample a_length) {
-		if (in_length.has_signal_connection())
-			resonator_length = a_length;
-		double pr = 2 * p_previous.real();
-		double u = reed_opening * (u0_gamma + pr * (A_gamma + pr * (B_gamma + pr * C_gamma)));
-
-		p_previous = (p_previous + dt*F1_L * C1_Q * u) / (static_cast<complex<double>>(1) - dt* omega_L * s1_Q);
-		return p_previous.real();
+		return a_length;
 	}
 };
 
-MIN_EXTERNAL(modalClarinet);
+MIN_EXTERNAL(schumaClarinet);
