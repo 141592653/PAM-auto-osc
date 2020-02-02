@@ -3,22 +3,32 @@
 ///	@copyright	Copyright 2018 The Min-DevKit Authors. All rights reserved.
 ///	@license	Use of this source code is governed by the MIT License found in the License.md file.
 
+
 #include "c74_min.h"
-#include <complex>
-#include <array>
+
 #include <cmath>
+#include <complex>
+#include <vector>
+#include <array>
+#include <algorithm>
+#include <numeric>
 
 #include "trapeze.h"
+
+
+// TODO forbid too long resonators
 
 using namespace c74::min;
 
 #define DEFAULT_PRESSURE_RATIO 0.8
 #define DEFAULT_REED_OPENING 0.8
-#define DEFAULT_RESONATOR_LENGTH 0.3
+#define DEFAULT_RESONATOR_LENGTH 0.05
 #define DEFAULT_DISSIPATION 0.3
 
 
-#define COMPUTATION_DEPTH 2
+#define REFLEXION_SIZE 64 //optimal quality 64 => frequency max : ~
+#define MEMORY_SIZE 1024 //  1024 -> max resonator length : 3.5 meters
+
 #define EPSILON 0.0000001
 
 #define SOUND_SPEED 340.
@@ -29,9 +39,6 @@ using namespace c74::min;
 #endif // !M_PI
 
 
-inline double LengthToTime(double length) {
-	return 2. * length / SOUND_SPEED;
-}
 
 
 double exponentialR(const double t, std::vector<double> args) {
@@ -43,13 +50,12 @@ class schumaClarinet : public object<schumaClarinet>, public sample_operator<1, 
 private:
 	double dissipation;
 	double delta_t;
+	int offset;
 	double a;
 	double b;
-	std::array<double, COMPUTATION_DEPTH> F;
-	std::array<double, COMPUTATION_DEPTH> Q;
-	std::array<double, COMPUTATION_DEPTH> R;
-
-
+	std::array<double, MEMORY_SIZE> F;
+	std::array<double ,MEMORY_SIZE> Q;
+	std::array<double, REFLEXION_SIZE> R;
 
 
 	void updateDissipation() {
@@ -63,6 +69,13 @@ private:
 			resonator_time + tmp, 1000, v);
 	}
 
+	inline double LengthToTime(double length) {
+		if (length < 0)
+			cerr << "A length can't be negative. Taking the absolute value." << endl;
+		return 2. * length / SOUND_SPEED;
+	}
+
+
 public:
 	MIN_DESCRIPTION{ "A modal model of a clarinet" };
 	MIN_TAGS{ "simulation, clarinet" };
@@ -71,19 +84,19 @@ public:
 
 	schumaClarinet(const atoms& args = {}) {
 
-		if (args.size() >= 1) 	
+		if (args.size() >= 1)
 			resonator_time = LengthToTime(static_cast<double>(args[0]));
 		else
 			resonator_time = LengthToTime(DEFAULT_RESONATOR_LENGTH);
-		if (args.size() >= 2) 
+		if (args.size() >= 2)
 			dissipation = static_cast<double>(args[1]);
-		else 
+		else
 			dissipation = DEFAULT_DISSIPATION;
-		if (args.size() >= 3) 
+		if (args.size() >= 3)
 			pressure_ratio = static_cast<double>(args[2]);
 		else
 			pressure_ratio = DEFAULT_PRESSURE_RATIO;
-		if (args.size() >= 4) 
+		if (args.size() >= 4)
 			reed_opening = static_cast<double>(args[3]);
 		else
 			reed_opening = DEFAULT_REED_OPENING;
@@ -91,19 +104,19 @@ public:
 
 		//Initialisation
 		delta_t = 1. / samplerate();
-		for (int i = 0; i < COMPUTATION_DEPTH; i++) {
-			F[i] = 1.;
-			Q[i] = (i + 1) / pow(10, i + 1);
-		}
-
-		cout << "res " << resonator_time << " dissip " << dissipation << endl;
 		updateDissipation();
-
 		cout << a << " " << b << endl;
 
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pas bien !!!!!!!!!!!!!!!!!!!!!!!!
-		R[0] = -0.9;
-		R[1] = 0;
+		F[0] = 1;
+		F[1] = 0;
+		Q[0] = 0.1;
+		Q[1] = 0.11;
+		int n = REFLEXION_SIZE;
+		while (n--) {
+			//TODO init R
+		}
+		R[0] = -1.;
+
 	}
 
 
@@ -142,12 +155,19 @@ public:
 
 
 
-	attribute<number> resonator_time{ this, "resonator_time", DEFAULT_RESONATOR_LENGTH ,
+	attribute<number> resonator_time{ this, "resonator_time", LengthToTime(DEFAULT_RESONATOR_LENGTH) ,
 
 		description {"Time for the sound to go back and forth in the resonator" },
 		setter { MIN_FUNCTION {
 			double new_T = static_cast<double>(args[0]);
-		updateDissipation();
+			offset = floor(new_T * samplerate());
+			if (offset >= MEMORY_SIZE) {
+				cerr << "The resonator length is too long for the memory size. The sound will be degraded." << endl;
+			}
+			else if (offset < REFLEXION_SIZE) {
+				cerr << "The resonator length is to short compared to the quality of the reflexion. The quality is lowered." << endl;
+			}
+			updateDissipation();
 			return args;
 		}} };
 
@@ -174,8 +194,32 @@ public:
 	} };
 
 	sample operator()(sample a_length) {
-		return a_length;
+
+		//maybe store it
+		int convolve_size = std::min(REFLEXION_SIZE, offset + 1);
+
+		/*** Compute qh ***/
+		double qh = 0;
+		int i = 1;
+		for (int i = 1; i < convolve_size - 1; i++) {
+			qh += R[i] * (Q[offset - i] + ZC * F[offset - i]);
+		}
+		qh *= 2;
+		qh += R[convolve_size - 1] * \
+			(Q[offset - convolve_size + 1] + ZC * F[offset - convolve_size + 1]);
+		qh += R.front() * (Q[offset] + ZC * F[offset]);
+
+		//!!!!!!!!!!!!!!!!!!!!!! Do I have to put that?
+		//qh *= delta_t / 2;
+		
+		/*** Update Q and F ***/
+		std::rotate(Q.rbegin(), Q.rbegin() + 1, Q.rend());
+		std::rotate(F.rbegin(), F.rbegin() + 1, F.rend());
+		Q[0] = qh;
+		F[0] = 0;
+		return qh;
 	}
 };
 
 MIN_EXTERNAL(schumaClarinet);
+

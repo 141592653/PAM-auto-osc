@@ -5,7 +5,6 @@
 #include<numeric>
 
 
-
 double trapeze(double func(const double, std::vector<double> ), const double start,\
 	const double stop, const int resolution, std::vector<double> args) {
 	double step = (stop - start) / resolution;
