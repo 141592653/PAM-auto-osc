@@ -14,6 +14,8 @@
 #include <numeric>
 
 #include "trapeze.h"
+#include <gsl/gsl_poly.h>
+#include <gsl/gsl_complex.h>
 
 
 // TODO forbid too long resonators
@@ -54,9 +56,18 @@ private:
 	double a;
 	double b;
 	std::array<double, MEMORY_SIZE> F;
-	std::array<double ,MEMORY_SIZE> Q;
+	std::array<double, MEMORY_SIZE> Q;
 	std::array<double, REFLEXION_SIZE> R;
 
+
+
+	//polynom coefficients
+	double a_gamma;
+	double b_gamma;
+	double c_gamma;
+	double abc_zeta;
+
+	double zc_inv_sqr;
 
 	void updateDissipation() {
 		//update b
@@ -73,6 +84,12 @@ private:
 		if (length < 0)
 			cerr << "A length can't be negative. Taking the absolute value." << endl;
 		return 2. * length / SOUND_SPEED;
+	}
+
+
+	double function_to_zero(double q, double qh) {
+		return reed_opening*(1 - pressure_ratio + q) * sqrt(std::abs(pressure_ratio- q)) *\
+			(pressure_ratio - q >=0. ? 1. : -1.) - q + qh/reed_opening;
 	}
 
 
@@ -104,6 +121,7 @@ public:
 
 		//Initialisation
 		delta_t = 1. / samplerate();
+		zc_inv_sqr = 1. / (ZC * ZC);
 		updateDissipation();
 		cout << a << " " << b << endl;
 
@@ -143,13 +161,18 @@ public:
 	attribute<double> pressure_ratio{ this, "pressure_ratio", DEFAULT_PRESSURE_RATIO,
 		description {"Pressure inside the mouth compared to the pressure needed to close the reed"},
 		setter { MIN_FUNCTION {
-
+			double gamma = static_cast<double>(args[0]);
+			a_gamma = 3 * gamma - 2;
+			b_gamma = (1 - gamma) * (3 * gamma - 1);
+			c_gamma = pow(1 - gamma, 2) * gamma;
 			return args;
 		}} };
 
 	attribute<number> reed_opening{ this, "reed_opening", DEFAULT_REED_OPENING,
 		description {"Describes how the clarinet gives the air way"},
 		setter { MIN_FUNCTION {
+			double zeta_sqr = 
+			abc_zeta =  1 / pow(static_cast<double>(args[0]) * ZC ,2); 
 			return args;
 		}} };
 
@@ -209,9 +232,41 @@ public:
 			(Q[offset - convolve_size + 1] + ZC * F[offset - convolve_size + 1]);
 		qh += R.front() * (Q[offset] + ZC * F[offset]);
 
+		gsl_complex z;
+		GSL_SET_COMPLEX(&z, 0, 0);
+		std::vector<double> roots(6);
+		int nb_root1 = gsl_poly_solve_cubic(-a_gamma-abc_zeta,  -b_gamma - qh*abc_zeta, -c_gamma - qh * qh * abc_zeta,
+			&roots[0], &roots[1], &roots[2]);
+		int nb_root2 = gsl_poly_solve_cubic(a_gamma-abc_zeta,  b_gamma - qh*abc_zeta, c_gamma - qh * qh * abc_zeta,
+			&roots[3], &roots[4], &roots[5]);
+
+		roots.erase(roots.begin() + 3 + nb_root2, roots.end());
+		roots.erase(roots.begin() + nb_root1, roots.begin() + 3);
+
+		
+		i = roots.size();
+		while (i>nb_root1) { //process the second roots
+			i--;
+			if (roots[i] < pressure_ratio)
+				roots.erase(roots.begin() + i, roots.begin() + i +1);
+		}
+		while (i--) { //process the first roots
+			if (roots[i] >= pressure_ratio)
+				roots.erase(roots.begin() + i, roots.begin() + i + 1);
+		}
+
+		i = roots.size();
+		while (i--) {
+			double truc = function_to_zero(roots[i], qh);
+			if (std::abs(truc)> sqrt(EPSILON) ||
+				roots[i]<= pressure_ratio - 1)
+				roots.erase(roots.begin() + i, roots.begin() + i + 1);
+		}
+
+
 		//!!!!!!!!!!!!!!!!!!!!!! Do I have to put that?
 		//qh *= delta_t / 2;
-		
+
 		/*** Update Q and F ***/
 		std::rotate(Q.rbegin(), Q.rbegin() + 1, Q.rend());
 		std::rotate(F.rbegin(), F.rbegin() + 1, F.rend());
