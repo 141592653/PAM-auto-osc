@@ -24,7 +24,7 @@ using namespace c74::min;
 
 #define DEFAULT_PRESSURE_RATIO 0.8
 #define DEFAULT_REED_OPENING 0.8
-#define DEFAULT_RESONATOR_LENGTH 0.05
+#define DEFAULT_RESONATOR_LENGTH 0.3
 #define DEFAULT_DISSIPATION 0.3
 
 
@@ -87,9 +87,15 @@ private:
 	}
 
 
+
 	double function_to_zero(double q, double qh) {
 		return reed_opening*(1 - pressure_ratio + q) * sqrt(std::abs(pressure_ratio- q)) *\
-			(pressure_ratio - q >=0. ? 1. : -1.) - q + qh/reed_opening;
+			(pressure_ratio - q >=0. ? 1. : -1.) - q + qh;
+	}
+
+	double f_of_q(double q) {
+		return reed_opening* (1 - pressure_ratio + q)* sqrt(std::abs(pressure_ratio - q))* \
+			(pressure_ratio - q >= 0. ? 1. : -1.);
 	}
 
 
@@ -232,12 +238,13 @@ public:
 			(Q[offset - convolve_size + 1] + ZC * F[offset - convolve_size + 1]);
 		qh += R.front() * (Q[offset] + ZC * F[offset]);
 
+
 		gsl_complex z;
 		GSL_SET_COMPLEX(&z, 0, 0);
 		std::vector<double> roots(6);
-		int nb_root1 = gsl_poly_solve_cubic(-a_gamma-abc_zeta,  -b_gamma - qh*abc_zeta, -c_gamma - qh * qh * abc_zeta,
+		int nb_root1 = gsl_poly_solve_cubic(-a_gamma + abc_zeta,  -b_gamma - 2*qh*abc_zeta, -c_gamma + qh * qh * abc_zeta,
 			&roots[0], &roots[1], &roots[2]);
-		int nb_root2 = gsl_poly_solve_cubic(a_gamma-abc_zeta,  b_gamma - qh*abc_zeta, c_gamma - qh * qh * abc_zeta,
+		int nb_root2 = gsl_poly_solve_cubic(-a_gamma-abc_zeta,  -b_gamma + 2*qh*abc_zeta, -c_gamma - qh * qh * abc_zeta,
 			&roots[3], &roots[4], &roots[5]);
 
 		roots.erase(roots.begin() + 3 + nb_root2, roots.end());
@@ -263,6 +270,23 @@ public:
 				roots.erase(roots.begin() + i, roots.begin() + i + 1);
 		}
 
+		if (qh <= pressure_ratio - 1)
+			roots.push_back(qh);
+
+		double q = 0;
+		if (roots.size()) {
+			if (roots.size() == 1)
+				q = roots[0];
+			else {
+				std::sort(roots.begin(), roots.end());
+				if (roots.size() == 3)
+					roots.erase(roots.begin() + 1, roots.begin() + 2);
+				if (std::abs(roots[0] - Q[0]) < std::abs(roots[1] - Q[0]))
+					q = roots[0];
+				else
+					q = roots[1];
+			}
+		}
 
 		//!!!!!!!!!!!!!!!!!!!!!! Do I have to put that?
 		//qh *= delta_t / 2;
@@ -270,9 +294,9 @@ public:
 		/*** Update Q and F ***/
 		std::rotate(Q.rbegin(), Q.rbegin() + 1, Q.rend());
 		std::rotate(F.rbegin(), F.rbegin() + 1, F.rend());
-		Q[0] = qh;
-		F[0] = 0;
-		return qh;
+		Q[0] = q;
+		F[0] = f_of_q(q);
+		return q;
 	}
 };
 
