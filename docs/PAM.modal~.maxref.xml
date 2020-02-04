@@ -55,6 +55,11 @@
 			<description>Set the frequency in Hz. </description>
 		</method>
 
+		<method name='list'>
+			<digest>Operate on the list</digest>
+			<description>Operate on the list. Either add it to the collection or calculate the mean. </description>
+		</method>
+
 	</methodlist>
 
 
@@ -62,14 +67,24 @@
 
 	<attributelist>
 
-		<attribute name='pressure_ratio' get='1' set='1' type='float64' size='1' >
-			<digest>Pressure inside the mouth compared to the pressure needed to close the reed </digest>
-			<description>Pressure inside the mouth compared to the pressure needed to close the reed </description>
+		<attribute name='frequency_ratios' get='1' set='1' type='float64' size='1' >
+			<digest>Frequency ratios of all the modes of the resonator </digest>
+			<description>Frequency ratios of all the modes of the resonator </description>
 		</attribute>
 
 		<attribute name='reed_opening' get='1' set='1' type='float64' size='1' >
 			<digest>Describes how the clarinet gives the air way </digest>
 			<description>Describes how the clarinet gives the air way </description>
+		</attribute>
+
+		<attribute name='operation' get='1' set='1' type='long' size='1' >
+			<digest>Choose the operation to perform with the input</digest>
+			<description>Choose the operation to perform with the input. Collect items into a list or calculate the mean from a list. </description>
+		</attribute>
+
+		<attribute name='pressure_ratio' get='1' set='1' type='float64' size='1' >
+			<digest>Pressure inside the mouth compared to the pressure needed to close the reed </digest>
+			<description>Pressure inside the mouth compared to the pressure needed to close the reed </description>
 		</attribute>
 
 		<attribute name='resonator_length' get='1' set='1' type='float64' size='1' >

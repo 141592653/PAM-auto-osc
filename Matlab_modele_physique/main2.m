@@ -40,7 +40,7 @@ function [Q,F]=main2(zeta, gamma, L, F, Q, percent)
         root = roots([a1 b1 c1 d1]);%%%%%%%%%
         %keep the real root in the right interval
         for k = 1:length(root)
-            if(imag(root(k))<eps & real(root(k))<gamma)
+            if(abs(imag(root(k)))<eps & real(root(k))<gamma)
                 realRoot(end+1) = real(root(k));
             end
         end
@@ -53,7 +53,7 @@ function [Q,F]=main2(zeta, gamma, L, F, Q, percent)
         d2 = -zeta^2*(1-gamma)^2*gamma - 1/Zc^2*qh^2;
         root = roots([a2 b2 c2 d2]);%%%%%%%%%%%%
         for k = 1:length(root)
-            if(imag(root(k))<eps & real(root(k))>=gamma)
+            if(abs(imag(root(k)))<eps & real(root(k))>=gamma)
                 realRoot(end+1) =  real(root(k));
             end
         end
@@ -62,7 +62,7 @@ function [Q,F]=main2(zeta, gamma, L, F, Q, percent)
 
         %enleve en dessous de gamma-1
         k=1;
-        while k < length(realRoot)
+        while k <= length(realRoot)
             if(realRoot(k)<=gamma-1)
                 realRoot([k]) = [];
                 k=k-1;
