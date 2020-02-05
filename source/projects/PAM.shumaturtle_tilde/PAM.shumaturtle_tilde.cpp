@@ -40,6 +40,12 @@ using namespace c74::min;
 # define M_PI 3.14159265358979323846
 #endif // !M_PI
 
+enum Excitator
+{
+	LippalReed, ClarinetReed, ClarinetReedSimplified, Violin
+};
+
+#define DEFAULT_EXCITATOR ClarinetReedSimplified
 
 
 
@@ -59,7 +65,7 @@ private:
 	std::array<double, MEMORY_SIZE> Q;
 	std::array<double, REFLEXION_SIZE> R;
 
-
+	Excitator excitator;
 
 	//polynom coefficients
 	double a_gamma;
@@ -123,6 +129,7 @@ public:
 			reed_opening = static_cast<double>(args[3]);
 		else
 			reed_opening = DEFAULT_REED_OPENING;
+
 
 
 		//Initialisation
@@ -216,6 +223,8 @@ public:
 		case 3:
 			reed_opening = args;
 			break;
+		case 4 : 
+			excitator = static_cast<Excitator>(args[0]);
 		default:
 			std::cerr << "A number message has be sent to an unknown inlet" << std::endl;
 	}
