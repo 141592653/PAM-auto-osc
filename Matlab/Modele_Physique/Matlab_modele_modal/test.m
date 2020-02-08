@@ -17,4 +17,4 @@ reedModel = 1;
 
 args = [T dt f Q A qr 1 1 reedModel];
 
-svm('clarinet_modal2', args, 'oscillation', 30, 10, 'clarin', '../../Cartographies/', ["png", "pdf"]);
+svm('clarinet_modal2', args, 'oscillation', 30, 10, 'clarin', '../../Cartographies/clarinnete/', ["png", "pdf"]);

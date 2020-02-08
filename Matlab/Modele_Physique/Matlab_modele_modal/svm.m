@@ -88,7 +88,11 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
     end
     
     % enregistrer les graphes en images
+    if(~exist(path, 'dir'))
+       mkdir(path); 
+    end
     filename = strcat(path, 'svm_', instrument_name);
+    
     for i=1:length(formats)
         saveas(gcf, filename, formats(i));
     end
