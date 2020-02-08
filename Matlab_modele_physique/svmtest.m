@@ -32,7 +32,6 @@ f = @(x) (oscillation(main2(x(1), x(2), L, F, Q, percent), eps));
 % y is the descriptor applied on each pressure vector
 for i = 1:nb_points
    y(i,:) = f(x(i,:)); 
-   i
 end
 
 plot(y);
