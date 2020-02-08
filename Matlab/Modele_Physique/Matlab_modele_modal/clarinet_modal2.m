@@ -1,4 +1,15 @@
-function [p,u] = clarinet_modal2(zeta, gamma, T, dt, f, Q, Z, qr, p0, u0, reedModel)
+% args = (T dt f Q Z qr p0 u0 reedModel)
+function [p,u] = clarinet_modal2(zeta, gamma, args)
+    T = args(1);
+    dt = args(2);
+    f = args(3);
+    Q = args(4);
+    Z = args(5);
+    qr = args(6);
+    p0 = args(7);
+    u0 = args(8);
+    reedModel = args(9);
+    
     N = floor(T/dt);
 
     n = length(f);

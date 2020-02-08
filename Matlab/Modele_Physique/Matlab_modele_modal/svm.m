@@ -5,10 +5,10 @@
 % donner un nom à la figure)
 % format (string) = format auquel on veut enregistrer 
 % args (matrice) = liste des arguments constants pour le modèle
-% num (int) = numéro de l'image
+% path (string) = le dossier où enregistrer l'image
 
-function svm(model_name, args, desc_name, nb_points, instrument_name, format, num)
-    if(nargin > 7)
+function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, path, format)
+    if(nargin > 9)
         error("too many inputs");
     end
     
@@ -24,7 +24,7 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
        descriptor = @(signal) oscillation(signal);
     elseif(strcmpi(desc_name, 'brightness'))
        descriptor = @(signal) brightness(signal);
-       seuil = 10;
+       seuil = 8;
     end
     
     %if (descriptor == 0)
@@ -74,17 +74,16 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
     
     fprintf("Svm fit done\n");
     
-    svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 10, 'conv', false);
+    svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', nb_edsd, 'conv', false);
     
     fprintf("edsd fit done\n");
     figure;
-    svm_col{end}.isoplot('legend', false, 'sv', false, 'bcol', 'k')
+    svm_col{end}.isoplot('legend', false, 'sv', false)
     %axis equal 
     xlabel('zeta')
     ylabel('gamma')
     title('Descripteur : oscillation. A = 30, Q = 10')
-    
-    % cette partie n'a pas été testée
+
     if(seuil > 2)
         fprintf("Cas où plusieurs seuil dans le descripteur\n");
         
@@ -93,7 +92,7 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
             fprintf("seuil %d\n", i);
             SVM = CODES.fit.svm(svm_end.X, svm_end.Y + i);
             fprintf("edsd seuil %d\n", i);
-            svm_col = CODES.sampling.edsd(g, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
+            svm_col = CODES.sampling.edsd(g, SVM, [0 0], [1 1] , 'iter_max', nb_edsd, 'conv', false);
             % ?? pas sûre de s'il faut faire cette prochaine ligne 
             % ou continuer avec le svm_end du début
             svm_end = svm_col{end};
@@ -103,24 +102,18 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
     end
     
     
-    % la partie récupération des courbes ne fonctionne pas 
+    % cette partie n'a pas été testée
     
     fprintf("Récupére les courbes\n");
     % récupérer toutes les courbes
-    courbe = findobj(gcf,'Color','g');
+    courbe = findobj(gcf,'Color','k'); 
     xd = get(courbe,'XData');
     yd = get(courbe,'YData');
     
-    
-    figure;
     plot(xd, yd);
     
     % enregistrer les graphes en images
-    filename = strcat('svm_', instrument_name, int2str(num));
-    
-    fprintf("%s\n", filename);
+    filename = strcat(path, 'svm_', instrument_name);
     saveas(gcf, filename, format);
-    
-    %saveas(gcf, filename, 'm');
  
 end
