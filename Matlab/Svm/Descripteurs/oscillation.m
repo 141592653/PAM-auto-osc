@@ -1,5 +1,6 @@
-function b = oscillation(p, eps)
+function b = oscillation(p)
 % return true if it produces sound
+eps = 0.3;
 
 N = ceil(length(p) * 2/3);
 

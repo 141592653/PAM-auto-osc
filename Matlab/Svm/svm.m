@@ -5,18 +5,16 @@
 % donner un nom à la figure)
 % format (string) = format auquel on veut enregistrer 
 % args (matrice) = liste des arguments constants pour le modèle
-% num (int) = numéro de l'image
+% path (string) = le dossier où enregistrer l'image
 
-function svm(model_name, args, desc_name, nb_points, instrument_name, format, num)
-    if(nargin > 7)
+function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, path, formats)
+    if(nargin > 9)
         error("too many inputs");
     end
     
     fprintf("Le descripteur est %s\n", desc_name);
     fprintf("Le modèle est %s\n", model_name);
 
-    descriptor  = 0;
-    model = 0;
     seuil = 2;
     
     % chercher pointeur sur la fonction de descripteur
@@ -27,23 +25,13 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
        seuil = 10;
     end
     
-    %if (descriptor == 0)
-     %   error("Le descripteur n'a pas été trouvé.");
-    %end
-    
     % chercher pointeur sur la fonction du modèle
     if(strcmpi(model_name, 'clarinet_modal2'))
         model = @(zeta, gamma, args) clarinet_modal2(zeta, gamma, args);
     elseif(strcmpi(model_name, 'clarinet_modal'))
         model = @(args) clarinet_modal(args);
     end
-    
 
-    
-    %if(model == 0)
-     %  error("Le modèle n'existe pas."); 
-    %end
-    
     % créer les points
     fprintf("création des points\n");
     x = lhsdesign(nb_points,2);
@@ -67,24 +55,25 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
     % descriptor à plusieurs seuils
     
     % if(seuil == 2)
-    
-    
-    
+        
     SVM = CODES.fit.svm(x,y);
     
     fprintf("Svm fit done\n");
     
+<<<<<<< HEAD:Matlab_modele_modal/svm.m
     svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
+=======
+    svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', nb_edsd, 'conv', false);
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Svm/svm.m
     
     fprintf("edsd fit done\n");
     figure;
-    svm_col{end}.isoplot('legend', false, 'sv', false, 'bcol', 'k')
+    svm_col{end}.isoplot('legend', false, 'sv', false, 'samples', false)
     %axis equal 
     xlabel('zeta')
     ylabel('gamma')
     title('Descripteur : oscillation. A = 30, Q = 10')
-    
-    % cette partie n'a pas été testée
+
     if(seuil > 2)
         fprintf("Cas où plusieurs seuil dans le descripteur\n");
         
@@ -93,15 +82,20 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
             fprintf("seuil %d\n", i);
             SVM = CODES.fit.svm(svm_end.X, svm_end.Y + i);
             fprintf("edsd seuil %d\n", i);
+<<<<<<< HEAD:Matlab_modele_modal/svm.m
             svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
+=======
+            svm_col = CODES.sampling.edsd(g, SVM, [0 0], [1 1] , 'iter_max', nb_edsd, 'conv', false);
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Svm/svm.m
             % ?? pas sûre de s'il faut faire cette prochaine ligne 
             % ou continuer avec le svm_end du début
             svm_end = svm_col{end};
-            svm_end.isoplot('bcol', 'k');
+            svm_end.isoplot('bcol', 'k', 'samples', false);
             hold on
         end
     end
     
+<<<<<<< HEAD:Matlab_modele_modal/svm.m
     
     % la partie récupération des courbes ne fonctionne pas 
     
@@ -122,5 +116,16 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
 %     saveas(gcf, filename, format);
 %     
 %     %saveas(gcf, filename, 'm');
+=======
+    % enregistrer les graphes en images
+    if(~exist(path, 'dir'))
+       mkdir(path); 
+    end
+    filename = strcat(path, 'svm_', instrument_name);
+    
+    for i=1:length(formats)
+        saveas(gcf, filename, formats(i));
+    end
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Svm/svm.m
  
 end

@@ -1,3 +1,7 @@
+<<<<<<< HEAD:Matlab_modele_modal/clarinet_modal2.m
+=======
+% args = (T dt f Q Z qr p0 u0 reedModel)
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Modele_Physique/modele_modal/clarinet_modal2.m
 function [p,u] = clarinet_modal2(zeta, gamma, args)
     T = args(1);
     dt = args(2);
@@ -9,7 +13,10 @@ function [p,u] = clarinet_modal2(zeta, gamma, args)
     u0 = args(8);
     reedModel = args(9);
     
+<<<<<<< HEAD:Matlab_modele_modal/clarinet_modal2.m
     
+=======
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Modele_Physique/modele_modal/clarinet_modal2.m
     N = floor(T/dt);
 
     n = length(f);
