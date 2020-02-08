@@ -12,11 +12,7 @@ T = 1;
 Fs = 44100;
 N = T*Fs;
 pr = zeros(1,N);
-<<<<<<< HEAD
 p = clarinet_modal2(0.3, 0.2, T, 1/Fs, f,Q,Z);
-=======
-p = clarinet_modal2(0.3, 0.4, T, 1/Fs, f,Q, qr,Z);
->>>>>>> 632df36a14cd9fbea4fd65cd3c15b356176524ca
 for i = 1:N
     pr(i) = sum(real(p(:,i)));
 end

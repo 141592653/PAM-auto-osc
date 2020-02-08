@@ -21,7 +21,7 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
     
     % chercher pointeur sur la fonction de descripteur
     if(strcmpi(desc_name, 'oscillation'))
-       descriptor = @(signal) oscillation(signal);
+       descriptor = @(signal) oscillation(signal, 0.1);
     elseif(strcmpi(desc_name, 'brightness'))
        descriptor = @(signal) brightness(signal);
        seuil = 10;
@@ -52,7 +52,7 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
     
     fprintf("appliquer le descripteur à tous les points\n");
     
-    result = @(x) descriptor(real(model(x(1), x(2), args)));
+    result = @(x) descriptor(real(model(x(1), x(2), args))');
     
     y = zeros(1, nb_points);
     for i = 1:nb_points
@@ -74,7 +74,7 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
     
     fprintf("Svm fit done\n");
     
-    svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 10, 'conv', false);
+    svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
     
     fprintf("edsd fit done\n");
     figure;
@@ -93,7 +93,7 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
             fprintf("seuil %d\n", i);
             SVM = CODES.fit.svm(svm_end.X, svm_end.Y + i);
             fprintf("edsd seuil %d\n", i);
-            svm_col = CODES.sampling.edsd(g, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
+            svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
             % ?? pas sûre de s'il faut faire cette prochaine ligne 
             % ou continuer avec le svm_end du début
             svm_end = svm_col{end};
@@ -105,22 +105,22 @@ function svm(model_name, args, desc_name, nb_points, instrument_name, format, nu
     
     % la partie récupération des courbes ne fonctionne pas 
     
-    fprintf("Récupére les courbes\n");
-    % récupérer toutes les courbes
-    courbe = findobj(gcf,'Color','g');
-    xd = get(courbe,'XData');
-    yd = get(courbe,'YData');
-    
-    
-    figure;
-    plot(xd, yd);
-    
-    % enregistrer les graphes en images
-    filename = strcat('svm_', instrument_name, int2str(num));
-    
-    fprintf("%s\n", filename);
-    saveas(gcf, filename, format);
-    
-    %saveas(gcf, filename, 'm');
+%     fprintf("Récupére les courbes\n");
+%     % récupérer toutes les courbes
+%     courbe = findobj(gcf,'Color','g');
+%     xd = get(courbe,'XData');
+%     yd = get(courbe,'YData');
+%     
+%     
+%     figure;
+%     plot(xd, yd);
+%     
+%     % enregistrer les graphes en images
+%     filename = strcat('svm_', instrument_name, int2str(num));
+%     
+%     fprintf("%s\n", filename);
+%     saveas(gcf, filename, format);
+%     
+%     %saveas(gcf, filename, 'm');
  
 end
