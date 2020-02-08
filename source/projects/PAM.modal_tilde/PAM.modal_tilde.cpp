@@ -38,7 +38,7 @@ std::complex<double> s1_Q_transform(double q) {
 };
 
 std::complex<double> C1_Q_transform(double q) {
-	return (1 / q) * std::complex<double>(1,1/sqrt(4. * pow(q, 2) - 1.));
+	return (1 / q) * std::complex<double>(1, 1 / sqrt(4. * pow(q, 2) - 1.));
 };
 
 double sign(double a) {
@@ -67,12 +67,12 @@ private:
 
 
 
-	double x,x_prev;
+	double x, x_prev;
 	std::vector<std::complex<double>> p;
 	double p_prev;
 
 	void update_Q(std::vector<double> new_Q) {
-		for (int i = 0; i < new_Q.size();i++) {
+		for (int i = 0; i < new_Q.size(); i++) {
 			s1_Q[i] = s1_Q_transform(new_Q[i]);
 			C1_Q[i] = C1_Q_transform(new_Q[i]);
 		}
@@ -91,15 +91,15 @@ public:
 			resonator_length = static_cast<double>(args[0]);
 		else
 			resonator_length = DEFAULT_RESONATOR_LENGTH;
-		/*if (args.size() >= 2) 
+		/*if (args.size() >= 2)
 			quality_factor = static_cast<double>(args[1]);
 		else
 			quality_factor = DEFAULT_QUALITY_FACT;*/
-		if (args.size() >= 3) 
+		if (args.size() >= 3)
 			pressure_ratio = static_cast<double>(args[2]);
 		else
 			pressure_ratio = DEFAULT_PRESSURE_RATIO;
-		if (args.size() >= 4) 
+		if (args.size() >= 4)
 			reed_opening = static_cast<double>(args[3]);
 		else
 			reed_opening = DEFAULT_REED_OPENING;
@@ -107,7 +107,6 @@ public:
 			excitator = static_cast<Excitator>(args[4]);
 		else
 			excitator = DEFAULT_EXCITATOR;
-
 		freq_ratio.resize(2);
 		freq_ratio[0] = 1.;
 		freq_ratio[1] = 2.;
@@ -125,16 +124,18 @@ public:
 		s1_Q.resize(freq_ratio.size());
 		C1_Q.resize(freq_ratio.size());
 
-		std::vector<double> Q_init({ 10., 15.});
+		std::vector<double> Q_init({ 10., 15. });
 		update_Q(Q_init);
 	}
 
 
 	inlet<>  in_length{ this, "(signal) Length" };
-	inlet<>  in_quality{ this, "(number) Quality factor of the resonator" };
+	inlet<>  in_quality{ this, "(list) Quality factor of the resonator" };
 	inlet<>  in_pressure{ this, "(number) Pressure inside the mouth compared to the pressure needed to close the reed" };
 	inlet<>  in_opening{ this, "(number) Describes how the clarinet gives the air way " };
 	inlet<>  in_excitator{ this, "(int) Excitator type : LippalReed = 0, ClarinetReed = 1, ClarinetReedSimplified = 2, Violin = 3" };
+	inlet<>  in_frequencies{ this, "(list) Resonator's frequencies " };
+	inlet<>  in_amplitudes{ this, "(list) List of amplitudes for each frequency " };
 	outlet<> out1{ this, "(signal) clarinet sound", "signal" };
 
 	argument<number> length_arg{
@@ -174,8 +175,8 @@ public:
 
 		description {"Length of the clarinet"},
 		setter { MIN_FUNCTION {
-			freq_L =  SOUND_SPEED / (2 * static_cast<double>(args[0]));
-			omega_L = 2 * M_PI * freq_L ;
+			freq_L = SOUND_SPEED / (2 * static_cast<double>(args[0]));
+			omega_L = 2 * M_PI * freq_L;
 			return args;
 		}} };
 
@@ -197,16 +198,6 @@ public:
 		case 0:
 			resonator_length = args;
 			break;
-		case 1:
-		{
-			std::vector<double> new_Q;
-			for (int i = 0; i < new_Q.size(); i++) {
-				new_Q.push_back(static_cast<double>(args[i]));
-			}
-			update_Q(new_Q);
-			//quality_factor = args;
-		}
-			break;
 		case 2:
 			pressure_ratio = args;
 			break;
@@ -222,7 +213,31 @@ public:
 	} };
 
 	message<> list{ this, "list", "Operate on the list. Either add it to the collection or calculate the mean.", MIN_FUNCTION{
-		cout << (double)args[0] << " " << (double)args[1] << " " << (double)args[2] << endl;
+		cout << "Message for a list from inlet " << inlet << endl;
+		if (inlet == 2) {
+			std::vector<double> new_Q;
+			for (int i = 0; i < args.size(); i++) {
+				new_Q.push_back(static_cast<double>(args[i]));
+			}
+			update_Q(new_Q);
+		}
+		if (inlet == 5) {
+			std::vector<double> new_freq;
+			for (int i = 0; i < args.size(); i++) {
+				new_freq.push_back(static_cast<double>(args[i]));
+			}
+			this->freq_ratio.swap(new_freq);			
+		}
+		if (inlet == 6) {
+			std::vector<double> new_ampl;
+			for (int i = 0; i < args.size(); i++) {
+				new_ampl.push_back(static_cast<double>(args[i]));
+			}
+			this->Z.swap(new_ampl);
+		}
+		else {
+			std::cerr << "A list message has be sent to an unknown inlet" << std::endl;
+		}
 		return {};
 	} };
 
@@ -231,17 +246,17 @@ public:
 		if (in_length.has_signal_connection())
 			resonator_length = a_length;
 		double pr = 2 * p_prev;
-		double u = 0; 
+		double u = 0;
 
 		switch (excitator) {
-		case ClarinetReed : 
+		case ClarinetReed:
 			if (pressure_ratio - pr < 1)
-				u = reed_opening *(1 - pressure_ratio + pr)*sqrt(abs(pressure_ratio - pr))*sign(pressure_ratio - pr);
+				u = reed_opening * (1 - pressure_ratio + pr) * sqrt(abs(pressure_ratio - pr)) * sign(pressure_ratio - pr);
 			break;
-		case ClarinetReedSimplified : 
-			u = reed_opening* (u0_gamma + pr * (A_gamma + pr * (B_gamma + pr * C_gamma)));
+		case ClarinetReedSimplified:
+			u = reed_opening * (u0_gamma + pr * (A_gamma + pr * (B_gamma + pr * C_gamma)));
 			break;
-		case LippalReed :
+		case LippalReed:
 			double next_x_prev = x;
 			//x = (-pr - 1 / wr / wr * (x_prev - 2 * x) / dt / dt + qr / wr * x / dt) / (1 / (wr * dt) ^ 2 + qr / (wr * dt) + 1);
 			//u(i) = zeta.*(1 + gamma + x(i)).*sqrt(abs(gamma - pr)).*sign(gamma - pr);
@@ -252,8 +267,8 @@ public:
 			std::complex<double> chose = dt * omega_L * Z[i] * freq_ratio[i] * C1_Q[i] * u;
 			std::complex<double> chose2 = (static_cast<std::complex<double>>(1) - dt * freq_ratio[i] * omega_L * s1_Q[i]);
 
-			p[i] = (p[i] + dt * omega_L * Z[i] * freq_ratio[i] * C1_Q[i] * u) / 
-				(static_cast<std::complex<double>>(1) - dt * freq_ratio[i] * omega_L* s1_Q[i]);
+			p[i] = (p[i] + dt * omega_L * Z[i] * freq_ratio[i] * C1_Q[i] * u) /
+				(static_cast<std::complex<double>>(1) - dt * freq_ratio[i] * omega_L * s1_Q[i]);
 			p_prev += p[i].real();
 		}
 
