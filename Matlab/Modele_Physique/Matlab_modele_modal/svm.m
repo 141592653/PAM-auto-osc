@@ -7,7 +7,7 @@
 % args (matrice) = liste des arguments constants pour le modèle
 % path (string) = le dossier où enregistrer l'image
 
-function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, path, format)
+function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, path, formats)
     if(nargin > 9)
         error("too many inputs");
     end
@@ -89,6 +89,8 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
     
     % enregistrer les graphes en images
     filename = strcat(path, 'svm_', instrument_name);
-    saveas(gcf, filename, format);
+    for i=1:length(formats)
+        saveas(gcf, filename, formats(i));
+    end
  
 end
