@@ -46,9 +46,9 @@ elseif(strcmpi(resonator, 'trompet'))
 end
 
 
-args = [T dt reedmodel qr u0 u1 p0 p1];
+args = [zeta gamma L reedmodel T dt qr u0 u1 p0 p1];
 
-p = clarinet_modal2(zeta, gamma, args, f, Q, Z);
+[p, u] = clarinet_modal2(args, f, Q, Z);
 
 for i = 1:N
     pr(i) = sum(real(p(:,i)));

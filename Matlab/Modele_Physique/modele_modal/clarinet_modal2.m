@@ -1,21 +1,39 @@
-% args = [T dt reedmodel qr u0 u1 p0 p1];
-function [p,u] = clarinet_modal2(zeta, gamma, args,  f, Q, Z)
-    T = args(1);
-    dt = args(2);
+% args = [zeta gamma L T dt reedmodel qr u0 u1 p0 p1];
+function [p,u] = clarinet_modal2(args, fixe, F, Q, Z)
+    if((strcmpi(fixe, 'L')))
+        L = 0.5;
+        zeta = args(1);
+        gamma = args(2);
+    elseif((strcmpi(fixe, 'zeta')))
+        zeta = 0.8;
+        gamma = args(1);
+        L = args(2);
+    else
+        gamma = 0.8;
+        zeta = args(1);
+        L = args(2);
+    end
+
     reedmodel = args(3);
-    qr = args(4);
+    T = args(4);
+    dt = args(5);
+    qr = args(6);
+    %!!!!!!!!!!!!!! faire L!!!!!!!!  
     
     N = floor(T/dt);
     start = 2;
+    
+    f = c/2/L;
+    F = f*F;
 
-    n = length(f);
+    n = length(F);
     p = zeros(n,N);
     u = zeros(1,N);
     
-    u(1) = args(5); u(2) = args(6); p(1) = args(7); p(2) = args(8);
+    u(1) = args(7); u(2) = args(8); p(1) = args(9); p(2) = args(10);
     
     %Set parameters 
-    w = 2*pi*f;
+    w = 2*pi*F;
 %     A = zeta*(3*gamma-1)/2/sqrt(gamma);
 %     B = -zeta*(3*gamma+1)/8/gamma^(3/2);
 %     C = -zeta*(gamma+1)/16/gamma^(5/2);
@@ -25,7 +43,7 @@ function [p,u] = clarinet_modal2(zeta, gamma, args,  f, Q, Z)
 
     if(reedmodel==2)
         x = zeros(1,N);
-        wr = 2*pi*f(1);
+        wr = 2*pi*F(1);
         start = 3;
     end
     
