@@ -1,5 +1,10 @@
 clear all;
 
+% add path
+addpath '..\Modele_Physique\modele_modal'
+addpath '..\Modele_Physique\modele_guide_onde'
+addpath '\Descripteurs'
+
 % une liste de tous les noms de modèles
 % A REMPLIR AU FUR ET A MESURE !!!!!!!!!
 models = ["clarinet_modal", "clarinet_modal2"];
