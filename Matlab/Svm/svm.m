@@ -19,7 +19,7 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
     
     % chercher pointeur sur la fonction de descripteur
     if(strcmpi(desc_name, 'oscillation'))
-       descriptor = @(signal) oscillation(signal);
+       descriptor = @(signal) oscillation(signal, 0.1);
     elseif(strcmpi(desc_name, 'brightness'))
        descriptor = @(signal) brightness(signal);
        seuil = 10;
@@ -40,7 +40,7 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
     
     fprintf("appliquer le descripteur à tous les points\n");
     
-    result = @(x) descriptor(real(model(x(1), x(2), args)));
+    result = @(x) descriptor(real(model(x(1), x(2), args))');
     
     y = zeros(1, nb_points);
     for i = 1:nb_points
@@ -60,7 +60,11 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
     
     fprintf("Svm fit done\n");
     
+<<<<<<< HEAD:Matlab_modele_modal/svm.m
+    svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
+=======
     svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', nb_edsd, 'conv', false);
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Svm/svm.m
     
     fprintf("edsd fit done\n");
     figure;
@@ -78,7 +82,11 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
             fprintf("seuil %d\n", i);
             SVM = CODES.fit.svm(svm_end.X, svm_end.Y + i);
             fprintf("edsd seuil %d\n", i);
+<<<<<<< HEAD:Matlab_modele_modal/svm.m
+            svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 1] , 'iter_max', 50, 'conv', false);
+=======
             svm_col = CODES.sampling.edsd(g, SVM, [0 0], [1 1] , 'iter_max', nb_edsd, 'conv', false);
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Svm/svm.m
             % ?? pas sûre de s'il faut faire cette prochaine ligne 
             % ou continuer avec le svm_end du début
             svm_end = svm_col{end};
@@ -87,6 +95,28 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
         end
     end
     
+<<<<<<< HEAD:Matlab_modele_modal/svm.m
+    
+    % la partie récupération des courbes ne fonctionne pas 
+    
+%     fprintf("Récupére les courbes\n");
+%     % récupérer toutes les courbes
+%     courbe = findobj(gcf,'Color','g');
+%     xd = get(courbe,'XData');
+%     yd = get(courbe,'YData');
+%     
+%     
+%     figure;
+%     plot(xd, yd);
+%     
+%     % enregistrer les graphes en images
+%     filename = strcat('svm_', instrument_name, int2str(num));
+%     
+%     fprintf("%s\n", filename);
+%     saveas(gcf, filename, format);
+%     
+%     %saveas(gcf, filename, 'm');
+=======
     % enregistrer les graphes en images
     if(~exist(path, 'dir'))
        mkdir(path); 
@@ -96,5 +126,6 @@ function svm(model_name, args, desc_name, nb_points, nb_edsd, instrument_name, p
     for i=1:length(formats)
         saveas(gcf, filename, formats(i));
     end
+>>>>>>> f80639d3f0e5a6fe87454dfb47441ec87d106fe2:Matlab/Svm/svm.m
  
 end

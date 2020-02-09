@@ -11,7 +11,7 @@ seuil8 = .8;
 seuil9 = .9;
 
 
-res = mirbrightness(signal);
+res = mirgetdata(mirbrightness(miraudio(signal)));
 
 if res < seuil1
     y = -6;

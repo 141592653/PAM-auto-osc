@@ -16,6 +16,7 @@ percent = 0.2;
 
 % create set of points
 x = lhsdesign(nb_points,2);
+y = zeros(1, length(x));
 
 pressure = zeros(nb_points,N);
 

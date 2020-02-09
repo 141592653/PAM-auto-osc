@@ -24,12 +24,12 @@ function [Q,F]=main2(zeta, gamma, L, F, Q, percent)
         realRoot = [];
 
         %equation 10 dirac en t-T
-        if(i-T/deltaT >= 0)
-            qh = r*(Q(floor(i-T/deltaT+1)) + Zc*F(floor(i-T/deltaT+1)));%%%%%
-        else
-            qh = 0;
-        end
-%        qh = qh1(t, Q, F, Zc, T, b, a, deltaT);
+%         if(i-T/deltaT >= 0)
+%             qh = r*(Q(floor(i-T/deltaT+1)) + Zc*F(floor(i-T/deltaT+1)));%%%%%
+%         else
+%             qh = 0;
+%         end
+       qh = qh1(t, Q, F, Zc, T, b, a, deltaT);
 
         %equations 1 11
         %q<gamma
