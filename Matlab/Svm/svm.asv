@@ -100,10 +100,6 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     elseif(strcmpi(para_fixe, 'gamma'))
         xlabel('zeta')
         ylabel('L')
-    elseif(strcmpi(para_fixe, 'zeta'))
-        xlabel('gamma')
-        ylabel('L')
-    end
         
     title(sprintf('Descripteur : %s  Instrument : %s  Model : %s', desc_name, strcat(exc_name, resonator_name), model))
 
@@ -151,9 +147,12 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     if(~exist(path, 'dir'))
        mkdir(path); 
     end
-    filename = strcat(path, nom_svm);
+    filename = strcat(path, 'svm_', desc_name);
     
     for i=1:length(formats)
+        gcf
+        filename
+        formats
         saveas(gcf, filename, formats(i));
     end
  
