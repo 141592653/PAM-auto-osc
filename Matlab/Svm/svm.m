@@ -9,6 +9,13 @@
 
 function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,...
     nb_points, nb_edsd, nom_svm, path, formats)
+
+    if(strcmpi(model_name, 'clarinet_modal2'))
+        models = "modal";
+    else
+        models = "guide_onde";
+    end
+
     if(nargin > 11)
         error("too many inputs");
     end
@@ -92,15 +99,21 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     fprintf("edsd fit done\n");
     
     svm_end = svm_col{end};
-    
+        
     figure;
 
     
     if(seuil > 2)
+        if(~exist(strcat(path, desc_name, '_', para_fixe) , 'dir'))
+            mkdir(strcat(path, desc_name, '_', para_fixe) ); 
+        end
         fprintf("Cas où plusieurs seuil dans le descripteur\n");
         
+        filename0 = strcat(path, desc_name, '_', para_fixe, '/', models, exc_name, resonator_name, '_', para_fixe, 'fixe_');
         svm_end = svm_col{end};
-        for i=1:seuil
+        save(strcat(filename0, '1.mat'), 'svm_end');
+        
+        for i=1:seuil-1
             color = [i/seuil, i/seuil, 1-i/seuil];
             fprintf("seuil %d\n", i);
             %svm_end.Y = svm_end.Y + 1;
@@ -109,10 +122,9 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
             SVM = CODES.fit.svm(svm_end.X, svm_end.Y+i);
             fprintf("edsd seuil %d\n", i);
             svm_col = CODES.sampling.edsd(result, SVM, min_svm, max_svm , 'iter_max', nb_edsd, 'conv', false);
-            sprintf("1");
             svm_end = svm_col{end};
-            sprintf("2");
             svm_end.isoplot('bcol',color, 'samples', false, 'sv', false);
+            save(strcat(filename0, sprintf('%d.mat', i) ), 'svm_end');
             hold on 
         end
     end
@@ -121,11 +133,6 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
         svm_end.isoplot('legend', false, 'sv', false, 'samples', false)
     end
     %axis equal 
-    if(strcmpi(model_name, 'clarinet_modal2'))
-        model = 'modal';
-    else
-        model = "guide_onde";
-    end
     if(strcmpi(para_fixe, 'L'))
         xlabel('zeta')
         ylabel('gamma')
@@ -137,7 +144,7 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
         ylabel('L')
     end
         
-    title(sprintf('Descripteur : %s  Instrument : %s  Model : %s', desc_name, strcat(exc_name, resonator_name), model))
+    title(sprintf('Descripteur : %s  Instrument : %s  Model : %s', desc_name, strcat(exc_name, resonator_name), models))
 
     
 
@@ -145,10 +152,10 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     if(~exist(path, 'dir'))
        mkdir(path); 
     end
-    filename = strcat(path, model, nom_svm, '_', para_fixe, 'fixe');
+    filename = strcat(path, models, nom_svm, '_', para_fixe, 'fixe');
     
     for i=1:length(formats)
         saveas(gcf, filename, formats(i));
     end
-    save(strcat(filename, '.mat'), 'svm_end')
+    % save(strcat(filename, '.mat'), 'svm_end')
 end
