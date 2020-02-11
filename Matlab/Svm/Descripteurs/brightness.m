@@ -1,20 +1,33 @@
 function y = brightness(signal)
-seuil = [0.1 0.15 0.2 0.25 0.3 0.4 0.45 0.5 0.55];
-results = [-7 -6 -5 -4 -3 -2 -1 0 1];
+seuil = [0 0.02 0.05 0.15 0.175 1];
+results = [-3 -2 -1 0 1];
 
-res = mirgetdata(mirbrightness(miraudio(signal(:,1))));
-
-if(res < seuil(1))
-    y = results(1);
-    return;
+persistent list;
+if(isempty(list))
+   list = []; 
 end
 
-for i=2:length(seuil)
-   if(res >= seuil(i-1) && res < seuil(i)
+if(length(list) == 200)
+  plot(list);  
+end
+
+res = mirgetdata(mirbrightness(miraudio(signal(:,1))));
+list = [list res];
+fprintf("result ==== %d \n", res);
+
+
+for i=1:length(seuil)-1
+    %fprintf("res >= %d && res < %d\n", seuil(i),seuil(i+1));
+   if (res >= seuil(i) && res < seuil(i+1))
+      %fprintf("entered the other if\n");
       y = results(i);
-      return;
+      break;
    end
 end
 
+
+if(isnan(res))
+   y = -3;
+end
 
 end
