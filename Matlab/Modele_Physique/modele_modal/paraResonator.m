@@ -22,7 +22,8 @@ function [f,Z,Q] = paraResonator(resonator, f0)
 
         f = f0*f_ratio.*(1 - a1*rv);
         Q = 1./(2*a1*rv);
-        Z = Zc*8*f0*Q./(2*pi*f)/1000000;
+        Z = Zc*8*f0*Q./(2*pi*f);
+        Z = 10*Z/Z(1);
         
 %         %7 modes
 %         f = 235.5*[1 3 5 7 9 11 13];
@@ -53,7 +54,8 @@ function [f,Z,Q] = paraResonator(resonator, f0)
 
         f = f0*f_ratio.*(1 - a1*rv);
         Q = 1./(2*a1*rv);
-        Z = Zc*8*f0*Q./(2*pi*f)/1000000;
+        Z = Zc*8*f0*Q./(2*pi*f);
+        Z = 10*Z/Z(1);
         
     elseif(strcmpi(resonator, 'trompet'))
         f = [88.16, 237.16, 353.89, 473.8, 591.29, 706.7, 820.3, 932.05, 1054.77, 1173.35, 1284.21, 1397.63]*2;
