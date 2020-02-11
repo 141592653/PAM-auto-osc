@@ -8,7 +8,7 @@ function [f,Z,Q] = paraResonator(resonator, f0)
 
         c = 340;
             
-        f_ratio = [1 3];
+        f_ratio = [1 3 5 7 9];
         
         kn = 2*pi*f0*f_ratio/c;
         
