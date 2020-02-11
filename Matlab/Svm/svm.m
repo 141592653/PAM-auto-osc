@@ -112,17 +112,23 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     if(seuil > 2)
         fprintf("Cas où plusieurs seuil dans le descripteur\n");
         
+        svm_end = svm_col{end};
         for i=1:seuil
+            color = [i/seuil, i/seuil, 1-i/seuil];
             fprintf("seuil %d\n", i);
-            SVM = CODES.fit.svm(svm_end.X, svm_end.Y + i);
+            %svm_end.Y = svm_end.Y + 1;
+            %svm_end.Y
+            svm_end.Y
+            SVM = CODES.fit.svm(svm_end.X, svm_end.Y+i);
             fprintf("edsd seuil %d\n", i);
-
-            svm_col = CODES.sampling.edsd(g, SVM, min_svm, max_svm, 'iter_max', nb_edsd, 'conv', false);
+            svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 3] , 'iter_max', edsd_samples, 'conv', false);
             % ?? pas sûre de s'il faut faire cette prochaine ligne 
             % ou continuer avec le svm_end du début
+            sprintf("1");
             svm_end = svm_col{end};
-            svm_end.isoplot('bcol', 'k', 'samples', false);
-            hold on
+            sprintf("2");
+            svm_end.isoplot('bcol',color, 'samples', false, 'sv', false);
+            hold on 
         end
     end
     

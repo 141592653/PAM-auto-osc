@@ -14,7 +14,7 @@ function out = freq(p)
     else
         i=1;
         out = 1;
-        while(i<= length(freqs) & freq>freqs(i))
+        while(i<= length(freqs) && freq>freqs(i))
             out = 1-i;
             i = i+1;
         end
