@@ -26,9 +26,9 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     seuil = 2;
     
     % arguments 
-    if(strcmpi(model_name, 'clarinet_modal2'))
-        [F,Q,Z] = paraResonator(resonator_name);
-    end
+%     if(strcmpi(model_name, 'clarinet_modal2'))
+%         [F,Q,Z] = paraResonator(resonator_name);
+%     end
     
     % chercher pointeur sur la fonction de descripteur
     if(strcmpi(desc_name, 'oscillation'))
@@ -74,7 +74,7 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
      
     fprintf("appliquer le descripteur à tous les points\n");
 
-    args0 = {para_fixe, exc_name, F, Q, Z};
+    args0 = {para_fixe, exc_name, resonator_name};
     args = [args0, args];
     
 

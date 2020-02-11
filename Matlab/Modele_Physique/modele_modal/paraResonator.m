@@ -1,4 +1,4 @@
-function [f,Z,Q] = paraResonator(resonator, f0)
+function [f,Q,Z] = paraResonator(resonator, f0)
 
     if(strcmpi(resonator, 'clarinet'))
         % 2 modes
@@ -30,7 +30,7 @@ function [f,Z,Q] = paraResonator(resonator, f0)
 %         Z = 10*[1 0.75 0.5 0.14 0.15 .12 .17];
 %         Q = [10 15 20 25 30 40 50];
 %         Z = [10 7.5];
-%         Q = [10 15];
+%         Q = [1 c 0 15];
     elseif(strcmpi(resonator, 'saxophone'))
         % 2 modes
         % f = 500*[1 2];

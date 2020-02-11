@@ -21,15 +21,15 @@ p0 = 0; p1 = 0;
 
 %plot(real(sum(clarinet_modal(0.8, 0.8, {1, 1/44100, [440 880], [10 15], [10 5], 0, 0, 0, 1}), 1)))
 
-[F,Q,Z] = paraResonator(resonator);
+%[F,Q,Z] = paraResonator(resonator);
 
 
-args = {fixe, resonator, T, dt, F, Q, Z, qr, u0, u1, p0, p1};
+args = {fixe, resonator, T, dt, qr, u0, u1, p0, p1};
 
 %{fixe reedmodel F Q Z T dt qr u0 u1 p0 p1}
-p = clarinet_modal2(0.8, 0.8, {'L', 'reed', [440 880], [10 15], [10 5], 1, 1/44100, 0.1, 0, 0, 0, 0});%clarinet_modal2(zeta, gamma, args);
+p = clarinet_modal2(0.6, 0.5, {'L', 'reed', 'clarinet', 1, 1/44100, 0.1, 0, 0, 0, 0});%clarinet_modal2(zeta, gamma, args);
 
-%plot(real(sum(p)))
+plot(real(sum(p)))
 
 %figure
 %spectrogram(pr, 'yaxis')

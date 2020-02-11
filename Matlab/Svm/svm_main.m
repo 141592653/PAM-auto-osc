@@ -12,7 +12,7 @@ model_names = ["modal", "guide_onde"];
 
 % une liste de tous les noms de descripteurs
 % A REMPLIR AU FUR ET A MESURE !!!!!!!!!
-descriptors = ["freq", "brightness", "oscillation"];
+descriptors = ["oscillation", "brightness", "freq"];
 
 % toutes les combinaisons d'instrument
 % resonator
@@ -22,8 +22,8 @@ exciters = ["reed", "lippal"];
 
 % données qui ne varient pas
 % A REMPLIR !!!!!!!!!
-nb_points = 10;
-nb_edsd = 10;
+nb_points = 100;
+nb_edsd = 150;
 T = 1;
 Fs = 44100;
 dt = 1/Fs;
@@ -38,7 +38,7 @@ path = "../Cartographies/";
 % les arguments
 % A FAIRE !!!!!!!
 args = {T, dt, qr, u0, u1, p0, p1};
-para_fixes = ["zeta", "L", "gamma"]; %% rajouter dans un boucle !!!!!!!!!!
+para_fixes = ["L", "L", "gamma"]; %% rajouter dans un boucle !!!!!!!!!!
 
 for i=1:1%length(models)
     for j = 1:1%length(exciters)
