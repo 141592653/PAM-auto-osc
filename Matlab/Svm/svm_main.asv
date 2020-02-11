@@ -11,7 +11,7 @@ models = ["clarinet_modal2", "clarinet_modal2"];
 
 % une liste de tous les noms de descripteurs
 % A REMPLIR AU FUR ET A MESURE !!!!!!!!!
-descriptors = ["oscillation", "freq"];
+descriptors = ["oscillation", "brightness"];
 
 % toutes les combinaisons d'instrument
 % resonator
@@ -21,8 +21,8 @@ exciters = ["reed", "lippal"];
 
 % données qui ne varient pas
 % A REMPLIR !!!!!!!!!
-nb_points = 100;
-nb_edsd = 150;
+nb_points = 10;
+nb_edsd = 10;
 T = 1;
 Fs = 44100;
 dt = 1/Fs;

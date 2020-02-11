@@ -36,9 +36,6 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
         model = @(args) clarinet_modal2(args);
     elseif(strcmpi(model_name, 'clarinet_modal'))
         model = @(args) clarinet_modal(args);
-    elseif(strcmpi(desc_name, 'freq'))
-       descriptor = @(signal) freq(signal);
-       seuil = 24;
     end
 %%
     % créer les points
@@ -69,10 +66,10 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     args0 = {para_fixe, exc_name, F, Q, Z};
     args = [args0, args];
     
-    result = @(x) descriptor(real(clarinet_modal2(x(1), x(2), args))');
+    result = @(x) descriptor(real(clarinet_modal2(0.8, 0.8, args))');
     
     y = zeros(1, nb_points);
-    for i = 1:nb_points
+    for i = 1:1
        y(i) = result(x(i,:)); 
     end
     
@@ -95,7 +92,7 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     if(strcmpi(model_name, 'clarinet_modal2'))
         model = 'modal';
     else
-        model = "guide_onde";
+        model = "guide d'onde";
     end
     if(strcmpi(para_fixe, 'L'))
         xlabel('zeta')
@@ -161,7 +158,7 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     if(~exist(path, 'dir'))
        mkdir(path); 
     end
-    filename = strcat(path, model, nom_svm, '_', para_fixe, 'fixe');
+    filename = strcat(path, '_',nom_svm);
     
     for i=1:length(formats)
         saveas(gcf, filename, formats(i));
