@@ -37,7 +37,7 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     elseif(strcmpi(model_name, 'clarinet_modal'))
         model = @(args) clarinet_modal(args);
     end
-%%
+
     % créer les points
     fprintf("création des points\n");
     x = lhsdesign(nb_points,2);
@@ -66,7 +66,7 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     args0 = {para_fixe, exc_name, F, Q, Z};
     args = [args0, args];
     
-    result = @(x) descriptor(real(clarinet_modal2(0.8, 0.8, args))');
+    result = @(x) descriptor(real(model(x(1), x(2), args))');
     
     y = zeros(1, nb_points);
     for i = 1:1
@@ -122,8 +122,6 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
             SVM = CODES.fit.svm(svm_end.X, svm_end.Y+i);
             fprintf("edsd seuil %d\n", i);
             svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 3] , 'iter_max', edsd_samples, 'conv', false);
-            % ?? pas sûre de s'il faut faire cette prochaine ligne 
-            % ou continuer avec le svm_end du début
             sprintf("1");
             svm_end = svm_col{end};
             sprintf("2");
@@ -132,27 +130,6 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
         end
     end
     
-    
-    % la partie récupération des courbes ne fonctionne pas 
-    
-%     fprintf("Récupére les courbes\n");
-%     % récupérer toutes les courbes
-%     courbe = findobj(gcf,'Color','g');
-%     xd = get(courbe,'XData');
-%     yd = get(courbe,'YData');
-%     
-%     
-%     figure;
-%     plot(xd, yd);
-%     
-%     % enregistrer les graphes en images
-%     filename = strcat('svm_', instrument_name, int2str(num));
-%     
-%     fprintf("%s\n", filename);
-%     saveas(gcf, filename, format);
-%     
-%     %saveas(gcf, filename, 'm');
-
 
     % enregistrer les graphes en images
     if(~exist(path, 'dir'))
