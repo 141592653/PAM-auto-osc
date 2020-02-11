@@ -69,5 +69,5 @@ function p = clarinet_modal2(x, y, args)
         end
         p(:,i) = (p(:,i-1) + dt*D*u(i))./(1 - dt*s);
     end
-    %plot(real(sum(p)))
+    p = real(sum(p));
 end

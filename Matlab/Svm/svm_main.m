@@ -11,7 +11,7 @@ models = ["clarinet_modal2", "clarinet_modal2"];
 
 % une liste de tous les noms de descripteurs
 % A REMPLIR AU FUR ET A MESURE !!!!!!!!!
-descriptors = ["oscillation", "freq"];
+descriptors = ["freq", "brightness", "oscillation"];
 
 % toutes les combinaisons d'instrument
 % resonator
@@ -22,7 +22,7 @@ exciters = ["reed", "lippal"];
 % données qui ne varient pas
 % A REMPLIR !!!!!!!!!
 nb_points = 100;
-nb_edsd = 150;
+nb_edsd = 100;
 T = 1;
 Fs = 44100;
 dt = 1/Fs;
@@ -37,7 +37,7 @@ path = "../Cartographies/";
 % les arguments
 % A FAIRE !!!!!!!
 args = {T, dt, qr, u0, u1, p0, p1};
-para_fixes = ["L", "gamma", "zeta"]; %% rajouter dans un boucle !!!!!!!!!!
+para_fixes = ["zeta", "L", "gamma"]; %% rajouter dans un boucle !!!!!!!!!!
 
 for i=1:1%length(models)
     for j = 1:1%length(exciters)

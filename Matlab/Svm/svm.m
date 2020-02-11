@@ -29,16 +29,17 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     elseif(strcmpi(desc_name, 'brightness'))
        descriptor = @(signal) brightness(signal);
        seuil = 10;
-    end
-    
-    % chercher pointeur sur la fonction du modèle
-    if(strcmpi(model_name, 'clarinet_modal2'))
-        model = @(args) clarinet_modal2(args);
-    elseif(strcmpi(model_name, 'clarinet_modal'))
-        model = @(args) clarinet_modal(args);
     elseif(strcmpi(desc_name, 'freq'))
        descriptor = @(signal) freq(signal);
        seuil = 24;
+    end
+    
+    
+    % chercher pointeur sur la fonction du modèle
+    if(strcmpi(model_name, 'clarinet_modal2'))
+        model = @(x,y,args) clarinet_modal2(x,y,args);
+    elseif(strcmpi(model_name, 'clarinet_modal'))
+        model = @(args) clarinet_modal(args);
     end
 
     % créer les points
@@ -90,8 +91,35 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
 
     fprintf("edsd fit done\n");
     
+    svm_end = svm_col{end};
+    
     figure;
-    svm_col{end}.isoplot('legend', false, 'sv', false, 'samples', false)
+
+    
+    if(seuil > 2)
+        fprintf("Cas où plusieurs seuil dans le descripteur\n");
+        
+        svm_end = svm_col{end};
+        for i=1:seuil
+            color = [i/seuil, i/seuil, 1-i/seuil];
+            fprintf("seuil %d\n", i);
+            %svm_end.Y = svm_end.Y + 1;
+            %svm_end.Y
+            svm_end.Y
+            SVM = CODES.fit.svm(svm_end.X, svm_end.Y+i);
+            fprintf("edsd seuil %d\n", i);
+            svm_col = CODES.sampling.edsd(result, SVM, min_svm, max_svm , 'iter_max', nb_edsd, 'conv', false);
+            sprintf("1");
+            svm_end = svm_col{end};
+            sprintf("2");
+            svm_end.isoplot('bcol',color, 'samples', false, 'sv', false);
+            hold on 
+        end
+    end
+    
+    if(seuil == 2)
+        svm_end.isoplot('legend', false, 'sv', false, 'samples', false)
+    end
     %axis equal 
     if(strcmpi(model_name, 'clarinet_modal2'))
         model = 'modal';
@@ -111,28 +139,6 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
         
     title(sprintf('Descripteur : %s  Instrument : %s  Model : %s', desc_name, strcat(exc_name, resonator_name), model))
 
-    svm_end = svm_col{end};
-    
-    if(seuil > 2)
-        fprintf("Cas où plusieurs seuil dans le descripteur\n");
-        
-        svm_end = svm_col{end};
-        for i=1:seuil
-            color = [i/seuil, i/seuil, 1-i/seuil];
-            fprintf("seuil %d\n", i);
-            %svm_end.Y = svm_end.Y + 1;
-            %svm_end.Y
-            svm_end.Y
-            SVM = CODES.fit.svm(svm_end.X, svm_end.Y+i);
-            fprintf("edsd seuil %d\n", i);
-            svm_col = CODES.sampling.edsd(result, SVM, [0 0], [1 3] , 'iter_max', edsd_samples, 'conv', false);
-            sprintf("1");
-            svm_end = svm_col{end};
-            sprintf("2");
-            svm_end.isoplot('bcol',color, 'samples', false, 'sv', false);
-            hold on 
-        end
-    end
     
 
     % enregistrer les graphes en images
