@@ -46,7 +46,7 @@ double sign(double a) {
 }
 
 
-class modalClarinet : public object<modalClarinet>, public sample_operator<2, 1> {
+class modalClarinet : public object<modalClarinet>, public sample_operator<1, 1> {
 private:
 
 	double A_gamma;
@@ -132,8 +132,8 @@ public:
 
 	inlet<>  in_length{ this, "(signal) Length" };
 	inlet<>  in_quality{ this, "(list) Quality factor of the resonator" };
-	inlet<>  in_pressure{ this, "(signal) Pressure inside the mouth compared to the pressure needed to close the reed" };
-	inlet<>  in_opening{ this, "(signal) Describes how the clarinet gives the air way " };
+	inlet<>  in_pressure{ this, "(number) Pressure inside the mouth compared to the pressure needed to close the reed" };
+	inlet<>  in_opening{ this, "(number) Describes how the clarinet gives the air way " };
 	inlet<>  in_excitator{ this, "(int) Excitator type : LippalReed = 0, ClarinetReed = 1, ClarinetReedSimplified = 2, Violin = 3" };
 	inlet<>  in_frequencies{ this, "(list) Resonator's frequencies " };
 	inlet<>  in_amplitudes{ this, "(list) List of amplitudes for each frequency " };
@@ -200,6 +200,9 @@ public:
 		case 0:
 			resonator_length = args;
 			break;
+		case 2:
+			pressure_ratio = args;
+			break;
 		case 3:
 			reed_opening = args;
 			break;
@@ -241,11 +244,9 @@ public:
 	} };
 
 
-	sample operator()(sample a_length, sample pressure) {
+	sample operator()(sample a_length) {
 		if (in_length.has_signal_connection())
 			resonator_length = a_length;
-		if(in_pressure.has_signal_connection())
-			pressure_ratio = pressure;
 		double pr = 2 * p_prev;
 		double u = 0;
 
@@ -259,12 +260,13 @@ public:
 			break;
 		case LippalReed:
 			double next_x_prev = x;
+			/*
 			double wr = omega_L * freq_ratio[0];
 			double qr = 0.1;
 			x = (-pr - 1 / wr / wr * (x_prev - 2 * x) / dt / dt + qr / wr * x / dt) 
 				/ (pow((1 / (wr * dt)), 2) + qr / (wr * dt) + 1);
 			u = reed_opening * (1 + pressure_ratio + x * sqrt(abs(pressure_ratio - pr)) * sign(pressure_ratio - pr));
-			
+			*/
 		}
 
 		p_prev = 0.;
