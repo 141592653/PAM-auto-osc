@@ -107,10 +107,11 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
         
     title(sprintf('Descripteur : %s  Instrument : %s  Model : %s', desc_name, strcat(exc_name, resonator_name), model))
 
+    svm_end = svm_col{end};
+    
     if(seuil > 2)
         fprintf("Cas où plusieurs seuil dans le descripteur\n");
         
-        svm_end = svm_col{end};
         for i=1:seuil
             fprintf("seuil %d\n", i);
             SVM = CODES.fit.svm(svm_end.X, svm_end.Y + i);
@@ -156,5 +157,5 @@ function svm(model_name, desc_name, exc_name, resonator_name, para_fixe, args,..
     for i=1:length(formats)
         saveas(gcf, filename, formats(i));
     end
- 
+    save(strcat(filename, '.mat'), 'svm_end')
 end

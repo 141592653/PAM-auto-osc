@@ -21,8 +21,8 @@ exciters = ["reed", "lippal"];
 
 % données qui ne varient pas
 % A REMPLIR !!!!!!!!!
-nb_points = 100;
-nb_edsd = 300;
+nb_points = 10;
+nb_edsd = 10;
 T = 1;
 Fs = 44100;
 dt = 1/Fs;
